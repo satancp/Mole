@@ -5,7 +5,8 @@ import angular from 'angular';
 import ngCookies from 'angular-cookies';
 import ngResource from 'angular-resource';
 import ngSanitize from 'angular-sanitize';
-
+import ngFileUpload from 'ng-file-upload';
+import ngMaterial from 'angular-material';
 import 'angular-socket-io';
 
 import uiRouter from 'angular-ui-router';
@@ -24,7 +25,7 @@ import socket from '../components/socket/socket.service';
 
 import './app.scss';
 
-angular.module('moleApp', [ngCookies, ngResource, ngSanitize, 'btford.socket-io', uiRouter,
+angular.module('moleApp', [ngCookies, ngResource, ngSanitize, ngMaterial, ngFileUpload, 'btford.socket-io', uiRouter,
   uiBootstrap, navbar, footer, main, constants, socket, util
 ])
   .config(routeConfig);

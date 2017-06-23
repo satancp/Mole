@@ -1,17 +1,18 @@
 /**
  * Using Rails-like standard naming convention for endpoints.
- * GET     /api/things              ->  index
- * POST    /api/things              ->  create
- * GET     /api/things/:id          ->  show
- * PUT     /api/things/:id          ->  upsert
- * PATCH   /api/things/:id          ->  patch
- * DELETE  /api/things/:id          ->  destroy
+ * GET     /api/ufiles              ->  index
+ * POST    /api/ufiles              ->  create
+ * GET     /api/ufiles/:id          ->  show
+ * PUT     /api/ufiles/:id          ->  upsert
+ * PATCH   /api/ufiles/:id          ->  patch
+ * DELETE  /api/ufiles/:id          ->  destroy
  */
 
 'use strict';
 
 import jsonpatch from 'fast-json-patch';
-import Thing from './thing.model';
+import Ufile from './ufile.model';
+import fs from 'fs';
 
 function respondWithResult(res, statusCode) {
   statusCode = statusCode || 200;
@@ -64,53 +65,67 @@ function handleError(res, statusCode) {
   };
 }
 
-// Gets a list of Things
+// Gets a list of Ufiles
 export function index(req, res) {
-  return Thing.find().exec()
+  return Ufile.find().exec()
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
 
-// Gets a single Thing from the DB
+// Gets a single Ufile from the DB
 export function show(req, res) {
-  return Thing.findById(req.params.id).exec()
+  return Ufile.findById(req.params.id).exec()
     .then(handleEntityNotFound(res))
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
 
-// Creates a new Thing in the DB
+// Creates a new Ufile in the DB
 export function create(req, res) {
-  return Thing.create(req.body)
+  return Ufile.create(req.body)
     .then(respondWithResult(res, 201))
     .catch(handleError(res));
 }
 
-// Upserts the given Thing in the DB at the specified ID
+// Uploads the file
+export function upload(req, res) {
+  if(Array.isArray(req.files.file) == true) {
+    for(var i = 0; i < req.files.file.length; i++) {
+      fs.createReadStream(req.files.file[i].path).pipe(fs.createWriteStream(`./upload/${req.files.file[i].name}`));
+    }
+    res.end('Finished');
+  } else {
+    fs.createReadStream(req.files.file.path).pipe(fs.createWriteStream(`./upload/${req.files.file.name}`));
+    res.end('Finished');
+  }
+}
+
+// Upserts the given Ufile in the DB at the specified ID
 export function upsert(req, res) {
   if(req.body._id) {
     Reflect.deleteProperty(req.body, '_id');
   }
-  return Thing.findOneAndUpdate({_id: req.params.id}, req.body, {new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true}).exec()
+  return Ufile.findOneAndUpdate({_id: req.params.id}, req.body, {new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true}).exec()
+
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
 
-// Updates an existing Thing in the DB
+// Updates an existing Ufile in the DB
 export function patch(req, res) {
   if(req.body._id) {
     Reflect.deleteProperty(req.body, '_id');
   }
-  return Thing.findById(req.params.id).exec()
+  return Ufile.findById(req.params.id).exec()
     .then(handleEntityNotFound(res))
     .then(patchUpdates(req.body))
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
 
-// Deletes a Thing from the DB
+// Deletes a Ufile from the DB
 export function destroy(req, res) {
-  return Thing.findById(req.params.id).exec()
+  return Ufile.findById(req.params.id).exec()
     .then(handleEntityNotFound(res))
     .then(removeEntity(res))
     .catch(handleError(res));
